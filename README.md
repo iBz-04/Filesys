@@ -1,7 +1,7 @@
-# Safe File Server
+# File system MCP
 
 ## Overview
-Safe File Server is a lightweight file server built with Python and the mcp library that securely exposes file contents and metadata from a preconfigured directory. The project leverages FastMCP to provide a set of endpoints that allow:
+filesys is a lightweight mcp server built with Python and the mcp library that securely exposes file contents and metadata from a preconfigured directory. The project leverages FastMCP to provide a set of endpoints that allow:
 - Listing all files in a specified directory.
 - Reading the contents and metadata of a specified file.
 
@@ -29,11 +29,11 @@ The server is started via `run.py`, and it utilizes the mcp library to handle re
 ## Installation
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/yourusername/yourproject.git
+   git clone https://github.com/iBz-04/Filesys.git
    ```
 2. **Navigate to the Project Directory:**
    ```bash
-   cd yourproject
+   cd Filesys
    ```
 3. **Create a Virtual Environment (Optional but Recommended):**
    ```bash
