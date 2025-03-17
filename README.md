@@ -7,6 +7,11 @@ filesys is a lightweight mcp server built with Python and the mcp library that s
 
 The project ensures safe file access by validating paths and preventing directory traversal attacks.
 
+## Preview
+- finding  and reading the the content of the test.txt file in the safe-folder
+
+<img src="https://res.cloudinary.com/diekemzs9/image/upload/v1742201934/Screenshot_2025-03-16_233952_fhr4m8.png" alt="My Image" width="950"/>
+
 ## How It Works
 The core functionality is divided into two main components:
 
