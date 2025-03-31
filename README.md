@@ -5,15 +5,17 @@ filesys is a lightweight mcp server built with Python and the mcp library that s
 - Listing all files in a specified directory.
 - Reading the contents and metadata of a specified file.
 
+**New:** It now includes an integration with Anthropic's Claude AI, allowing users to interact with the file system through natural language conversation, using Claude Tools to securely access the defined MCP resources.
+
 The project ensures safe file access by validating paths and preventing directory traversal attacks.
 
 ## Preview
-- finding  and reading the the content of the test.txt file in the safe-folder
+- Interacting with Claude to list and read files from the `safe_folder`:
 
-<img src="https://res.cloudinary.com/diekemzs9/image/upload/v1742201934/Screenshot_2025-03-16_233952_fhr4m8.png" alt="My Image" width="950"/>
+<img src="https://res.cloudinary.com/diekemzs9/image/upload/v1743439706/screenshot_vxq1ym.jpg" alt="My Image" width="2000"/>
 
 ## How It Works
-The core functionality is divided into two main components:
+The core functionality is divided into several components:
 
 - **Resources:**  
   In `src/resources.py`, two functions are responsible for file operations:
@@ -22,13 +24,18 @@ The core functionality is divided into two main components:
 
 - **Server:**  
   In `src/server.py`, a FastMCP server is initialized and registers two resource endpoints:
-  - `files://list`: Invokes `list_files_resource()`, which returns the list of files.
-  - `files://read/{filename}`: Invokes `read_file_resource(filename)`, which returns the file's content and metadata.
+  - `files://list`: Invokes `list_files()`.
+  - `files://read/{filename}`: Invokes `read_file(filename)`.
   
 The server is started via `run.py`, and it utilizes the mcp library to handle resource requests.
 
-- **Client & Testing:**  
-  An example client in `example_client.py` demonstrates how to connect to the server, list resources, and read file contents using the MCP protocol.  
+- **Claude Tool Client:**
+  In `claude_tool_client.py`, functions (`list_files_in_safe_folder`, `read_file_from_safe_folder`) are defined to interact with the running Filesys MCP server. These functions act as a bridge, translating simple function calls into MCP requests and parsing the responses. They are designed to be easily consumable by Claude Tools.
+
+- **Claude Interaction Script:**
+  The `interact_with_claude.py` script sets up an Anthropic client, defines Claude Tools based on the functions in `claude_tool_client.py`, and runs a command-line conversation loop. Users can ask Claude questions like "What files are available?" or "Read test.txt", and Claude will use the provided tools (which securely call the MCP server) to fulfill the requests.
+
+- **Testing:**  
   Unit tests in `tests/test_resources.py` ensure that the file listing and reading functionalities work as expected.
 
 ## Installation
@@ -46,9 +53,17 @@ The server is started via `run.py`, and it utilizes the mcp library to handle re
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 4. **Install Dependencies:**
+   Make sure you have Python installed. Then install the required libraries:
    ```bash
    pip install -r requirements.txt
    ```
+5. **Configure API Key:**
+   - Create a file named `.env.local` in the project's root directory.
+   - Add your Anthropic API key to this file:
+     ```env
+     ANTHROPIC_API_KEY=your_api_key_here
+     ```
+   - **Note:** The `.gitignore` file is configured to prevent this file from being committed to Git.
 
 ## Configuration
 The file server reads its configuration from `config/config.json`. By default, the server operates on the directory specified below:
@@ -59,30 +74,42 @@ The file server reads its configuration from `config/config.json`. By default, t
 ```
 You can modify this file to point to a different directory if needed.
 
+- **Anthropic API Key:** The Claude interaction script reads the `ANTHROPIC_API_KEY` from the `.env.local` file (see Installation step 5).
+
 ## Usage
-1. **Start the Server:**
+1. **Start the MCP Server:**
+   First, ensure the Filesys MCP server is running in a terminal:
    ```bash
    python run.py
    ```
-   This command will initialize the FastMCP server and register the file listing and reading endpoints.
+   This command initializes the FastMCP server and makes the `files://list` and `files://read/{filename}` endpoints available.
 
-2. **Interact with the Server:**
-   - **Using the Example Client:**  
-     You can run the provided example client to interact with the server:
-     ```bash
-     python example_client.py
-     ```
-   - **Direct Requests:**  
-     Use any MCP-compatible client to access the endpoints:  
-     - **List Files:** Request `files://list` to get the list of files.
-     - **Read a File:** Request `files://read/{filename}` (replace `{filename}` with the actual file name) to retrieve the file's content and metadata.
+2. **Interact with Claude:**
+   In a **separate terminal** (while the server from step 1 is still running), run the Claude interaction script:
+   ```bash
+   python interact_with_claude.py
+   ```
+   You can then ask Claude to interact with the files in the configured `safe_folder`. Examples:
+   - "What files can you see?"
+   - "List the available files."
+   - "Can you read test.txt for me?"
+   - "Tell me the contents of the file named test.txt"
+
+3. **Direct MCP Requests (Optional):**
+   You can also interact with the server directly using any MCP-compatible client:
+   - **List Files:** Request `files://list`.
+   - **Read a File:** Request `files://read/{filename}` (replace `{filename}` with the actual file name).
 
 ## Testing
-Run the unit tests to verify the functionality:
-```bash
-python -m unittest discover tests
-```
-This command will execute the tests in `tests/test_resources.py` to ensure that file operations perform correctly.
+- **MCP Client Functions:** You can test the functions that communicate with the MCP server by running:
+  ```bash
+  python claude_tool_client.py
+  ```
+  This executes the `test_tool_functions` defined at the end of the script. Ensure the MCP server (`python run.py`) is running beforehand.
+- **Core Resources (if tests exist):** If unit tests are created in the `tests/` directory (e.g., `tests/test_resources.py`), you can run them using:
+  ```bash
+  python -m unittest discover tests
+  ```
 
 ## Contributing
 Contributions are welcome! To contribute:
@@ -91,9 +118,8 @@ Contributions are welcome! To contribute:
 3. Commit your changes with detailed messages.
 4. Push your branch and open a pull request.
 
-
-
 ## Additional Notes
-- Customize the configuration as needed.
-- This project implements basic security measures to restrict file access to the configured directory.
+- Customize the configuration (`config/config.json`, `.env.local`) as needed.
+- **Important:** The Claude interaction script (`interact_with_claude.py`) requires the Filesys MCP server (`run.py`) to be running in a separate process.
+- This project implements basic security measures to restrict file access to the configured directory and prevent directory traversal.
 - Update this documentation as new features are added or changes are made. 
