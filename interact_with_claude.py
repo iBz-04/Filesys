@@ -62,12 +62,10 @@ async def run_conversation():
         if not user_input:
             continue
 
-        
         messages.append({"role": "user", "content": user_input})
 
         print("⏳ Thinking...")
         try:
-            
             response = await client.messages.create(
                 model=MODEL_NAME,
                 max_tokens=1024,
@@ -99,7 +97,6 @@ async def run_conversation():
                     tool_use_id = tool_use.id
 
                     print(f"🛠️ Claude wants to use tool: {tool_name}")
-                    print(f"   Input: {tool_input}")
 
                     tool_result_data = None 
                     if tool_name == "list_files_in_safe_folder":
@@ -114,9 +111,6 @@ async def run_conversation():
                         print(f"⚠️ Error: Unknown tool '{tool_name}' requested.")
                         tool_result_data = {"status": "error", "message": f"Unknown tool '{tool_name}'."}
 
-                    print(f"   Result: {tool_result_data}")
-
-                    
                     tool_results_content.append({
                         "type": "tool_result",
                         "tool_use_id": tool_use_id,

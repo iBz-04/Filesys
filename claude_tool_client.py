@@ -14,34 +14,34 @@ async def _execute_mcp_request(resource_uri: str) -> dict:
     Internal helper function to connect to the Filesys MCP server,
     execute a single read request, and return the parsed JSON response.
     """
-    print(f"[MCP Client] Connecting to server to request: {resource_uri}")
+    # print(f"[MCP Client] Connecting to server to request: {resource_uri}") # Removed
     try:
         # Establish connection for each request (can be optimized later if needed)
         async with stdio_client(SERVER_PARAMS) as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
-                print(f"[MCP Client] Session initialized. Reading resource: {resource_uri}")
+                # print(f"[MCP Client] Session initialized. Reading resource: {resource_uri}") # Removed
                 result = await session.read_resource(resource_uri)
-                print(f"[MCP Client] Received response.")
+                # print(f"[MCP Client] Received response.") # Removed
 
                 if result.contents and result.contents[0].text:
                     try:
                         # Attempt to parse the JSON response from the server
                         data = json.loads(result.contents[0].text)
-                        print(f"[MCP Client] Parsed response: {data}")
+                        # print(f"[MCP Client] Parsed response: {data}") # Removed
                         return data
                     except json.JSONDecodeError as json_e:
-                        print(f"[MCP Client] Error parsing JSON: {json_e}")
+                        print(f"[MCP Client] Error parsing JSON: {json_e}") # Keep error
                         return {"error": f"Failed to parse JSON response from server: {json_e}", "raw_response": result.contents[0].text}
                 elif result.error:
-                     print(f"[MCP Client] Received error from server: {result.error.message}")
+                     print(f"[MCP Client] Received error from server: {result.error.message}") # Keep error
                      return {"error": f"Server returned error: {result.error.message}"}
                 else:
-                    print("[MCP Client] Received empty or non-text content.")
+                    # print("[MCP Client] Received empty or non-text content.") # Removed
                     return {"error": "Received empty or non-text content from Filesys server"}
     except Exception as e:
         # Catch potential connection errors, MCP errors, process startup issues, etc.
-        print(f"[MCP Client] Exception during MCP request: {e}")
+        print(f"[MCP Client] Exception during MCP request: {e}") # Keep error
         return {"error": f"Failed to execute MCP request '{resource_uri}': {type(e).__name__}: {e}"}
 
 async def list_files_in_safe_folder() -> dict:
@@ -52,18 +52,18 @@ async def list_files_in_safe_folder() -> dict:
     Returns a dictionary indicating success or failure, containing the list of
     files or an error message.
     """
-    print("[Tool] Executing list_files_in_safe_folder")
+    # print("[Tool] Executing list_files_in_safe_folder") # Removed
     response = await _execute_mcp_request("files://list")
 
     # Process the response for the tool caller (Claude)
     if "error" in response:
-        print(f"[Tool] list_files failed: {response['error']}")
+        print(f"[Tool] list_files failed: {response['error']}") # Keep error
         return {"status": "error", "message": response["error"]}
     elif "files" in response:
-        print(f"[Tool] list_files succeeded: Found {len(response['files'])} files.")
+        # print(f"[Tool] list_files succeeded: Found {len(response['files'])} files.") # Removed
         return {"status": "success", "files": response["files"]}
     else:
-        print(f"[Tool] list_files failed: Unexpected response format: {response}")
+        print(f"[Tool] list_files failed: Unexpected response format: {response}") # Keep error
         return {"status": "error", "message": "Unexpected response format from Filesys server", "details": response}
 
 
@@ -78,10 +78,10 @@ async def read_file_from_safe_folder(filename: str) -> dict:
     Args:
         filename: The name of the file to read (e.g., "test.txt").
     """
-    print(f"[Tool] Executing read_file_from_safe_folder for filename: '{filename}'")
+    # print(f"[Tool] Executing read_file_from_safe_folder for filename: '{filename}'") # Removed
     # Basic security check: prevent directory traversal or hidden files
     if not filename or "/" in filename or "\\" in filename or filename.startswith("."):
-         print(f"[Tool] Invalid filename received: '{filename}'")
+         print(f"[Tool] Invalid filename received: '{filename}'") # Keep error
          return {"status": "error", "message": "Invalid or potentially unsafe filename provided."}
 
     resource_uri = f"files://read/{filename}"
@@ -90,10 +90,10 @@ async def read_file_from_safe_folder(filename: str) -> dict:
     # Process the response for the tool caller (Claude)
     if "error" in response:
         # Handle specific errors if needed, e.g., "Access denied" vs "File not found"
-        print(f"[Tool] read_file failed for '{filename}': {response['error']}")
+        print(f"[Tool] read_file failed for '{filename}': {response['error']}") # Keep error
         return {"status": "error", "filename": filename, "message": response["error"]}
     elif "content" in response and "metadata" in response:
-        print(f"[Tool] read_file succeeded for '{filename}'.")
+        # print(f"[Tool] read_file succeeded for '{filename}'.") # Removed
         return {
             "status": "success",
             "filename": filename,
@@ -101,7 +101,7 @@ async def read_file_from_safe_folder(filename: str) -> dict:
             "metadata": response["metadata"] # Includes size and modified time
         }
     else:
-        print(f"[Tool] read_file failed for '{filename}': Unexpected response format: {response}")
+        print(f"[Tool] read_file failed for '{filename}': Unexpected response format: {response}") # Keep error
         return {"status": "error", "filename": filename, "message": "Unexpected response format from Filesys server", "details": response}
 
 # --- Example Usage ---
