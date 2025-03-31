@@ -31,7 +31,7 @@ async def main():
                         
                        
                         if "test.txt" in files_data["files"]:
-                            file_result = await session.read_resource("files://read/test.txt")
+                            file_result = await session.read_resource("files://read/some.py")
                             file_json = file_result.contents[0].text
                             file_data = json.loads(file_json)
                             
